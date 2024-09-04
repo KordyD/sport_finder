@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"sport_finder/internal/routes"
+	"sport_finder/internal/storage/redis"
 )
 
 const PORT = ":8080"
@@ -26,8 +27,8 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error in connection", err)
 	}
-
-	routes.RegisterRoutes(db)
+	rdb := redis.Connect()
+	routes.RegisterRoutes(db, rdb)
 
 	log.Println("Starting server on ", PORT)
 	if err := http.ListenAndServe(PORT, nil); err != nil {
