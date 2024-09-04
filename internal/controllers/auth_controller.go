@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func RegistrationController(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func RegistrationController(w http.ResponseWriter, r *http.Request, db *sql.DB, userService services.UserService) {
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
@@ -22,7 +22,7 @@ func RegistrationController(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 		return
 	}
 
-	registeredUser, err := services.Registration(&user, db)
+	registeredUser, err := userService.Registration(&user, db)
 	if errors.Is(err, custom_errors.ErrEmptyPassword) {
 		http.Error(w, "Empty password", http.StatusBadRequest)
 		return
@@ -47,7 +47,7 @@ func RegistrationController(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 	}
 }
 
-func AuthorisationController(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func AuthorisationController(w http.ResponseWriter, r *http.Request, db *sql.DB, userService services.UserService) {
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
@@ -55,7 +55,7 @@ func AuthorisationController(w http.ResponseWriter, r *http.Request, db *sql.DB)
 		log.Println("Failed to parse request body:", err)
 		return
 	}
-	status, token, err := services.Authorisation(user.Username, user.Password, db)
+	status, token, err := userService.Authorisation(user.Username, user.Password, db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println("Failed to authorise user:", err)

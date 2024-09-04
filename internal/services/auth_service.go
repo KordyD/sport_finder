@@ -11,7 +11,9 @@ import (
 	"sport_finder/pkg/models"
 )
 
-func Registration(user *models.User, db *sql.DB) (*models.User, error) {
+type AuthService struct{}
+
+func (s *AuthService) Registration(user *models.User, db *sql.DB) (*models.User, error) {
 	if user.Password == "" {
 		log.Println("Empty password")
 		return nil, custom_errors.ErrEmptyPassword
@@ -44,7 +46,7 @@ func Registration(user *models.User, db *sql.DB) (*models.User, error) {
 	return &models.User{Username: user.Username, Password: hashedPassword, FavoriteSport: user.FavoriteSport}, nil
 }
 
-func Authorisation(username string, password string, db *sql.DB) (bool, string, error) {
+func (s *AuthService) Authorisation(username string, password string, db *sql.DB) (bool, string, error) {
 	hash := sha256.New()
 	hash.Write([]byte(password))
 	hashedPassword := base64.StdEncoding.EncodeToString(hash.Sum(nil))
