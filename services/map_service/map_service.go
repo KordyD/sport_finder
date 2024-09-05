@@ -3,7 +3,7 @@ package map_service
 import (
 	"encoding/json"
 	"log"
-	"sport_finder/internal/services/map_service/osm"
+	"sport_finder/services/map_service/osm"
 )
 
 type OSMResponse struct {
@@ -28,19 +28,22 @@ type Params struct {
 	Radius  int     `json:"radius"`
 	Leisure string  `json:"leisure"`
 }
-type MapService struct{}
 
 // 10000,59.9343,30.3351
-
-func (mS *MapService) GetAllObjects(params Params) []Element {
+func GetAllObjects(params Params) ([]Element, error) {
 	if params.Leisure == "" {
 		params.Leisure = "pitch"
 	}
-	body := osm.GetObjectsFromOSM(params.Lat, params.Lon, params.Radius, params.Leisure)
-	var osmResponse OSMResponse
-	err := json.Unmarshal(body, &osmResponse)
+	body, err := osm.GetObjectsFromOSM(params.Lat, params.Lon, params.Radius, params.Leisure)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal JSON: %v", err)
+		log.Printf("Failed to get objects from OSM: %v", err)
+		return nil, err
 	}
-	return osmResponse.Elements
+	var osmResponse OSMResponse
+	err = json.Unmarshal(body, &osmResponse)
+	if err != nil {
+		log.Printf("Failed to unmarshal OSM response: %v", err)
+		return nil, err
+	}
+	return osmResponse.Elements, nil
 }
